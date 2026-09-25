@@ -178,6 +178,17 @@
         link: "#"
       }
     ];
+const AMAZON_TAG = "snaggedfinds-21";
+function withTag(url) {
+  if (!url || url === "#" || !/amazon\./i.test(url)) return url;
+  try {
+    const u = new URL(url);
+    u.searchParams.set("tag", AMAZON_TAG);
+    return u.toString();
+  } catch {
+    return url;
+  }
+}
 
     // Group by part, newest part first, preserving each part's product order.
     const byPart = new Map();
