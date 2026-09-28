@@ -89,6 +89,10 @@
     padding: 12px;
     margin-bottom: 14px;
     align-items: center;
+    scroll-margin-top: 16px;
+  }
+  .product:target {
+    border-color: var(--accent);
   }
   .product img {
     width: 84px;
@@ -153,11 +157,16 @@
 
   <script>
     // Edit this list to add/remove/update featured products.
-    // `part` = which TikTok/Instagram carousel post it's from (matches "Part N").
-    // Replace `link` with the real Amazon Associate URL once approved.
+    // `part`     = which TikTok/Instagram carousel post it's from (matches "Part N").
+    // `anchorId` = unique URL-safe slug so Pinterest pins can deep-link straight
+    //              to this product via snaggedfinds.vercel.app/#anchor-id.
+    // `link`     = the real SiteStripe short/full link (auto-tagged if it's a
+    //              full amazon.co.uk/.com URL missing the tag; short amzn.to
+    //              links are left as-is since SiteStripe already tags those).
     const products = [
       {
         part: 1,
+        anchorId: "led-water-ripple-projector",
         name: "LED Water Ripple Aurora Projector",
         blurb: "Turns any ceiling into a moving wave of light — the one everyone asks about.",
         image: "",
@@ -165,6 +174,7 @@
       },
       {
         part: 1,
+        anchorId: "cloud-night-light",
         name: "Cloud Shape Night Light",
         blurb: "Soft ambient glow, looks great on a nightstand or shelf.",
         image: "",
@@ -172,23 +182,27 @@
       },
       {
         part: 1,
+        anchorId: "magnetic-cable-clips",
         name: "Magnetic Cable Organizer Clips",
         blurb: "Keeps charging cables from disappearing behind the desk.",
         image: "",
         link: "#"
       }
     ];
-const AMAZON_TAG = "snaggedfinds-21";
-function withTag(url) {
-  if (!url || url === "#" || !/amazon\./i.test(url)) return url;
-  try {
-    const u = new URL(url);
-    u.searchParams.set("tag", AMAZON_TAG);
-    return u.toString();
-  } catch {
-    return url;
-  }
-}
+
+    // Every Amazon link automatically gets the Associates tag appended, so it
+    // can never be forgotten when adding new products.
+    const AMAZON_TAG = "snaggedfinds-21";
+    function withTag(url) {
+      if (!url || url === "#" || !/amazon\./i.test(url)) return url;
+      try {
+        const u = new URL(url);
+        u.searchParams.set("tag", AMAZON_TAG);
+        return u.toString();
+      } catch {
+        return url;
+      }
+    }
 
     // Group by part, newest part first, preserving each part's product order.
     const byPart = new Map();
@@ -216,12 +230,13 @@ function withTag(url) {
       byPart.get(partNum).forEach((p) => {
         const el = document.createElement("div");
         el.className = "product";
+        if (p.anchorId) el.id = p.anchorId;
         el.innerHTML = `
           <img src="${p.image || 'https://placehold.co/84x84/1a1a1f/9a9aa2?text=%20'}" alt="${p.name}" />
           <div class="product-info">
             <h3>${p.name}</h3>
             <p>${p.blurb}</p>
-            <a class="shop-btn" href="${p.link}" target="_blank" rel="noopener sponsored">Shop on Amazon</a>
+            <a class="shop-btn" href="${withTag(p.link)}" target="_blank" rel="noopener sponsored">Shop on Amazon</a>
           </div>
         `;
         container.appendChild(el);
@@ -230,6 +245,6 @@ function withTag(url) {
 
     document.getElementById("year").textContent = new Date().getFullYear();
   </script>
-    <script defer src="https://cdn.vercel-insights.com/v1/script.js"></script>
+  <script defer src="https://cdn.vercel-insights.com/v1/script.js"></script>
 </body>
 </html>
